@@ -1,4 +1,6 @@
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.io;
 
 class Records {
     private String company;
@@ -87,11 +89,13 @@ public class Project4 {
     public static void main(String args[]) {
         Scanner scnr = new Scanner(System.in);
         String commandInput;
+        
         while (true) {
             commandInput = scnr.next();
-            //testing committing
+            //testing branch
             switch (commandInput) {
                 case "LOAD": //read layoffs.csv from current directory
+                    ArrayList<Records> records = new ArrayList<>();
                     break;
                 case "HELP": //list commands with one-line summaries
                     System.out.println("LOAD | read layoffs.csv from current directory");
