@@ -1,3 +1,5 @@
+import java.util.Scanner;
+
 class Records {
     //testing vsc merge
     private String company;
@@ -84,6 +86,20 @@ class Records {
 
 public class Project4 {
     public static void main(String args[]) {
-        
+        Scanner scnr = new Scanner(System.in);
+        String commandInput;
+        while (true) {
+            commandInput = scnr.next();
+
+            switch (commandInput) {
+                case "LOAD":
+                    break;
+                case "HELP":
+                    break;
+                case "SUMMARY":
+                    break;
+                
+            }
+        }
     }
 }
