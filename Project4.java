@@ -1,7 +1,6 @@
 import java.util.Scanner;
 
 class Records {
-    //testing vsc merge
     private String company;
     private int year;
     private int employees_start;
@@ -90,7 +89,7 @@ public class Project4 {
         String commandInput;
         while (true) {
             commandInput = scnr.next();
-
+            //testing committing
             switch (commandInput) {
                 case "LOAD":
                     break;
