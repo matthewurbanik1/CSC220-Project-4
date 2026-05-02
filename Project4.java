@@ -1,4 +1,6 @@
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.io;
 
 class Records {
     private String company;
@@ -87,11 +89,14 @@ public class Project4 {
     public static void main(String args[]) {
         Scanner scnr = new Scanner(System.in);
         String commandInput;
+        
         while (true) {
             commandInput = scnr.next();
             //testing branch
             switch (commandInput) {
                 case "LOAD":
+                    ArrayList<Records> records = new ArrayList<>();
+                    
                     break;
                 case "HELP":
                     break;
