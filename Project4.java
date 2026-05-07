@@ -20,22 +20,27 @@ class Records {
     private String confidence_level;
     private int data_quality_score;
 
-    public Records (String company, int year, int employees_start, int employees_end, int new_hires, int layoffs, int net_change, double hiring_rate_pct, double revenue_billion_usd, double stock_price_change_pct,double gdp_growth_us_pct,double unemployment_rate_us_pct, boolean is_estimated, String confidence_level, int data_quality_score) {
-        this.company = company;
-        this.year = year;
-        this.employees_start = employees_start;
-        this.employees_end = employees_end;
-        this.new_hires = new_hires;
-        this.layoffs = layoffs;
-        this.net_change = net_change;
-        this.hiring_rate_pct = hiring_rate_pct;
-        this.revenue_billion_usd = revenue_billion_usd;
-        this.stock_price_change_pct = stock_price_change_pct;
-        this.gdp_growth_us_pct = gdp_growth_us_pct;
-        this.unemployment_rate_us_pct = unemployment_rate_us_pct;
-        this.is_estimated = is_estimated;
-        this.confidence_level = confidence_level;
-        this.data_quality_score = data_quality_score;
+    public Records (String company, String year, String employees_start, String employees_end, String new_hires, String layoffs, String net_change, String hiring_rate_pct, String revenue_billion_usd, String stock_price_change_pct, String gdp_growth_us_pct, String unemployment_rate_us_pct, boolean is_estimated, String confidence_level, String data_quality_score) {
+        try {
+            this.company = company;
+            this.year = Integer.parseInt(year);
+            this.employees_start = Integer.parseInt(employees_start);
+            this.employees_end = Integer.parseInt(employees_end);
+            this.new_hires = Integer.parseInt(new_hires);
+            this.layoffs = Integer.parseInt(layoffs);
+            this.net_change = Integer.parseInt(net_change);
+            this.hiring_rate_pct = Double.parseDouble(hiring_rate_pct);
+            this.revenue_billion_usd = Double.parseDouble(revenue_billion_usd);
+            this.stock_price_change_pct = Double.parseDouble(stock_price_change_pct);
+            this.gdp_growth_us_pct = Double.parseDouble(gdp_growth_us_pct);
+            this.unemployment_rate_us_pct = Double.parseDouble(unemployment_rate_us_pct);
+            this.is_estimated = is_estimated;
+            this.confidence_level = confidence_level;
+            this.data_quality_score = Integer.parseInt(data_quality_score);
+        }
+        catch (NumberFormatException e) {
+            System.out.println("Error parsing numeric value from CSV, row " + company + " will be skipped: " + e.getMessage());
+        }
     }
     public String getCompany(){
         return company;
@@ -134,6 +139,7 @@ public class Project4 {
                     System.out.println("QUIT | exits");
                     break;
                 case "SUMMARY": //overall totals and average percentages
+                    //TODO: Rubric says to print loaded vs skipped rows
                     break;
                 case "TOP_LAYOFFS": //companies with highest layoffs
                     break;
