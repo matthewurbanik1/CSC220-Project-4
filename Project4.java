@@ -2,7 +2,7 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.*;
 
-class Records {
+class Record {
     private String company;
     private int year;
     private int employees_start;
@@ -20,42 +20,42 @@ class Records {
     private String confidence_level;
     private int data_quality_score;
 
-    public Records (String company, String year, String employees_start, String employees_end, String new_hires, String layoffs, String net_change, String hiring_rate_pct, String attrition_rate_pct, String revenue_billion_usd, String stock_price_change_pct, String gdp_growth_us_pct, String unemployment_rate_us_pct, String is_estimated, String confidence_level, String data_quality_score) {
+    public Record (String company, String year, String employees_start, String employees_end, String new_hires, String layoffs, String net_change, String hiring_rate_pct, String attrition_rate_pct, String revenue_billion_usd, String stock_price_change_pct, String gdp_growth_us_pct, String unemployment_rate_us_pct, String is_estimated, String confidence_level, String data_quality_score) {
         try {
-            this.company = company;
-            this.year = Integer.parseInt(year);
-            this.employees_start = Integer.parseInt(employees_start);
+            this.company = company.trim();
+            this.year = Integer.parseInt(year.trim());
+            this.employees_start = Integer.parseInt(employees_start.trim());
             if (this.employees_start < 0) {
-                throw new IllegalArgumentException("employees_start");
+                throw new IllegalArgumentException("employees_start, row " + this.company + " " + this.year + " will be skipped: For input string \"" + this.employees_start + "\"");
             }
-            this.employees_end = Integer.parseInt(employees_end);
+            this.employees_end = Integer.parseInt(employees_end.trim());
             if (this.employees_end < 0) {
-                throw new IllegalArgumentException("employees_end");
+                throw new IllegalArgumentException("employees_end, row " + this.company + " " + this.year + " will be skipped: For input string \"" + this.employees_end + "\"");
             }
-            this.new_hires = Integer.parseInt(new_hires);
+            this.new_hires = Integer.parseInt(new_hires.trim());
             if (this.new_hires < 0) {
-                throw new IllegalArgumentException("new_hires");
+                throw new IllegalArgumentException("new_hires, row " + this.company + " " + this.year + " will be skipped: For input string \"" + this.new_hires + "\"");
             }
-            this.layoffs = Integer.parseInt(layoffs);
+            this.layoffs = Integer.parseInt(layoffs.trim());
             if (this.layoffs < 0) {
-                throw new IllegalArgumentException("layoffs");
+                throw new IllegalArgumentException("layoffs, row " + this.company + " " + this.year + " will be skipped: For input string \"" + this.layoffs + "\"");
             }
-            this.net_change = Integer.parseInt(net_change);
-            this.hiring_rate_pct = Double.parseDouble(hiring_rate_pct);
-            this.attrition_rate_pct = Double.parseDouble(attrition_rate_pct);
-            this.revenue_billion_usd = Double.parseDouble(revenue_billion_usd);
-            this.stock_price_change_pct = Double.parseDouble(stock_price_change_pct);
-            this.gdp_growth_us_pct = Double.parseDouble(gdp_growth_us_pct);
-            this.unemployment_rate_us_pct = Double.parseDouble(unemployment_rate_us_pct);
-            this.is_estimated = Boolean.parseBoolean(is_estimated);
-            this.confidence_level = confidence_level;
-            this.data_quality_score = Integer.parseInt(data_quality_score);
+            this.net_change = Integer.parseInt(net_change.trim());
+            this.hiring_rate_pct = Double.parseDouble(hiring_rate_pct.trim());
+            this.attrition_rate_pct = Double.parseDouble(attrition_rate_pct.trim());
+            this.revenue_billion_usd = Double.parseDouble(revenue_billion_usd.trim());
+            this.stock_price_change_pct = Double.parseDouble(stock_price_change_pct.trim());
+            this.gdp_growth_us_pct = Double.parseDouble(gdp_growth_us_pct.trim());
+            this.unemployment_rate_us_pct = Double.parseDouble(unemployment_rate_us_pct.trim());
+            this.is_estimated = Boolean.parseBoolean(is_estimated.trim());
+            this.confidence_level = confidence_level.trim();
+            this.data_quality_score = Integer.parseInt(data_quality_score.trim());
         }
         catch (NumberFormatException e) { //Catches exceptions when parsing numeric values
             System.out.println("Error parsing numeric value from CSV, row " + company + " " + year + " will be skipped: " + e.getMessage());
         }
         catch (IllegalArgumentException e) { //Catches negative values in employees_start, employees_end, new_hires and layoffs
-            System.out.println("Negative value in column " + e.getMessage() + ", row " + company + " " + year + " will be skipped");
+            System.out.println("Negative value in column " + e.getMessage());
         }
     }
     public String getCompany(){
@@ -110,7 +110,7 @@ class Records {
         return unemployment_rate_us_pct;
     }
 
-    public boolean is_estimated(){
+    public boolean getIsEstimated(){
         return is_estimated;
     }
 
@@ -123,23 +123,44 @@ class Records {
     }
 }
 
-public class Project4 {
+
+class Project4 {
+
+    public ArrayList<Record> getYearList(ArrayList<Record> records, int year) {
+    ArrayList<Record> byYear = new ArrayList<Record>();
+    for (Record r : records) {
+        if (r.getYear() == year) {
+            byYear.add(r);
+        }
+    }
+    return byYear;
+    }
+    public ArrayList<Record> getCompanyList(ArrayList<Record> records, String company) {
+        ArrayList<Record> byCompany = new ArrayList<Record>();
+        for (Record r : records) {
+            if (r.getCompany().equals(company)) {
+                byCompany.add(r);
+            }
+        }
+        return byCompany;
+    }
     public static void main(String args[]) {
         Scanner scnr = new Scanner(System.in);
         String commandInput = "";
         String yearInput;
+        String lastReport = "";
         
         while (commandInput != "QUIT") {
             commandInput = scnr.next();
             //testing branch
             switch (commandInput) {
-                case "LOAD": //read layoffs.csv from current directory
-                    ArrayList<Records> records = new ArrayList<>();
+                case "LOAD": //read WorkforceData.csv from current directory
+                    ArrayList<Record> records = new ArrayList<>();
                     try (BufferedReader br = new BufferedReader(new FileReader("WorkforceData.csv"))) {
                         String line = br.readLine();
                         while ((line = br.readLine()) != null) {
                             String[] fields = line.split(",");
-                            records.add(new Records(fields[0],fields[1],fields[2],fields[3],fields[4],fields[5],fields[6],fields[7],fields[8],fields[9],fields[10],fields[11],fields[12],fields[13],fields[14],fields[15]));
+                            records.add(new Record(fields[0],fields[1],fields[2],fields[3],fields[4],fields[5],fields[6],fields[7],fields[8],fields[9],fields[10],fields[11],fields[12],fields[13],fields[14],fields[15]));
                         }
                         System.out.println("File loaded successfully.");
                     } 
@@ -148,7 +169,7 @@ public class Project4 {
                     }
                     break;
                 case "HELP": //list commands with one-line summaries
-                    System.out.println("LOAD | read layoffs.csv from current directory");
+                    System.out.println("LOAD | read WorkforceData.csv from current directory");
                     System.out.println("HELP | lists commands with one-line summaries");
                     System.out.println("SUMMARY [YEAR <yyyy>] | overall totals and average percentages");
                     System.out.println("TOP_LAYOFFS <N> [YEAR <yyyy>] | companies with highest layoffs");
@@ -160,7 +181,7 @@ public class Project4 {
                     System.out.println("QUIT | exits");
                     break;
                 case "SUMMARY": //overall totals and average percentages
-                    //TODO: Rubric says to print loaded vs skipped rows
+                    //TODO: Rubric says to print number of loaded vs skipped rows
                     break;
                 case "TOP_LAYOFFS": //companies with highest layoffs
                     break;
