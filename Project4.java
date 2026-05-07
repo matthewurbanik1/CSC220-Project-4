@@ -1,6 +1,6 @@
 import java.util.Scanner;
 import java.util.ArrayList;
-import java.io;
+import java.io.*;
 
 class Records {
     private String company;
@@ -20,6 +20,23 @@ class Records {
     private String confidence_level;
     private int data_quality_score;
 
+    public Records (String company, int year, int employees_start, int employees_end, int new_hires, int layoffs, int net_change, double hiring_rate_pct, double revenue_billion_usd, double stock_price_change_pct,double gdp_growth_us_pct,double unemployment_rate_us_pct, boolean is_estimated, String confidence_level, int data_quality_score) {
+        this.company = company;
+        this.year = year;
+        this.employees_start = employees_start;
+        this.employees_end = employees_end;
+        this.new_hires = new_hires;
+        this.layoffs = layoffs;
+        this.net_change = net_change;
+        this.hiring_rate_pct = hiring_rate_pct;
+        this.revenue_billion_usd = revenue_billion_usd;
+        this.stock_price_change_pct = stock_price_change_pct;
+        this.gdp_growth_us_pct = gdp_growth_us_pct;
+        this.unemployment_rate_us_pct = unemployment_rate_us_pct;
+        this.is_estimated = is_estimated;
+        this.confidence_level = confidence_level;
+        this.data_quality_score = data_quality_score;
+    }
     public String getCompany(){
         return company;
     }
@@ -89,6 +106,7 @@ public class Project4 {
     public static void main(String args[]) {
         Scanner scnr = new Scanner(System.in);
         String commandInput;
+        String yearInput;
         
         while (true) {
             commandInput = scnr.next();
@@ -96,6 +114,12 @@ public class Project4 {
             switch (commandInput) {
                 case "LOAD": //read layoffs.csv from current directory
                     ArrayList<Records> records = new ArrayList<>();
+                    try (BufferedReader br = new BufferedReader(new FileReader("WorkforceData.csv"))) {
+
+                    } 
+                    catch (IOException e) {
+                        System.out.println("Error reading CSV: " + e.getMessage());
+                    }
                     break;
                 case "HELP": //list commands with one-line summaries
                     System.out.println("LOAD | read layoffs.csv from current directory");
