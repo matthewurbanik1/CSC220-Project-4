@@ -20,26 +20,42 @@ class Records {
     private String confidence_level;
     private int data_quality_score;
 
-    public Records (String company, String year, String employees_start, String employees_end, String new_hires, String layoffs, String net_change, String hiring_rate_pct, String revenue_billion_usd, String stock_price_change_pct, String gdp_growth_us_pct, String unemployment_rate_us_pct, boolean is_estimated, String confidence_level, String data_quality_score) {
+    public Records (String company, String year, String employees_start, String employees_end, String new_hires, String layoffs, String net_change, String hiring_rate_pct, String attrition_rate_pct, String revenue_billion_usd, String stock_price_change_pct, String gdp_growth_us_pct, String unemployment_rate_us_pct, String is_estimated, String confidence_level, String data_quality_score) {
         try {
             this.company = company;
             this.year = Integer.parseInt(year);
             this.employees_start = Integer.parseInt(employees_start);
+            if (this.employees_start < 0) {
+                throw new IllegalArgumentException("employees_start");
+            }
             this.employees_end = Integer.parseInt(employees_end);
+            if (this.employees_end < 0) {
+                throw new IllegalArgumentException("employees_end");
+            }
             this.new_hires = Integer.parseInt(new_hires);
+            if (this.new_hires < 0) {
+                throw new IllegalArgumentException("new_hires");
+            }
             this.layoffs = Integer.parseInt(layoffs);
+            if (this.layoffs < 0) {
+                throw new IllegalArgumentException("layoffs");
+            }
             this.net_change = Integer.parseInt(net_change);
             this.hiring_rate_pct = Double.parseDouble(hiring_rate_pct);
+            this.attrition_rate_pct = Double.parseDouble(attrition_rate_pct);
             this.revenue_billion_usd = Double.parseDouble(revenue_billion_usd);
             this.stock_price_change_pct = Double.parseDouble(stock_price_change_pct);
             this.gdp_growth_us_pct = Double.parseDouble(gdp_growth_us_pct);
             this.unemployment_rate_us_pct = Double.parseDouble(unemployment_rate_us_pct);
-            this.is_estimated = is_estimated;
+            this.is_estimated = Boolean.parseBoolean(is_estimated);
             this.confidence_level = confidence_level;
             this.data_quality_score = Integer.parseInt(data_quality_score);
         }
-        catch (NumberFormatException e) {
-            System.out.println("Error parsing numeric value from CSV, row " + company + " will be skipped: " + e.getMessage());
+        catch (NumberFormatException e) { //Catches exceptions when parsing numeric values
+            System.out.println("Error parsing numeric value from CSV, row " + company + " " + year + " will be skipped: " + e.getMessage());
+        }
+        catch (IllegalArgumentException e) { //Catches negative values in employees_start, employees_end, new_hires and layoffs
+            System.out.println("Negative value in column " + e.getMessage() + ", row " + company + " " + year + " will be skipped");
         }
     }
     public String getCompany(){
@@ -110,17 +126,22 @@ class Records {
 public class Project4 {
     public static void main(String args[]) {
         Scanner scnr = new Scanner(System.in);
-        String commandInput;
+        String commandInput = "";
         String yearInput;
         
-        while (true) {
+        while (commandInput != "QUIT") {
             commandInput = scnr.next();
             //testing branch
             switch (commandInput) {
                 case "LOAD": //read layoffs.csv from current directory
                     ArrayList<Records> records = new ArrayList<>();
                     try (BufferedReader br = new BufferedReader(new FileReader("WorkforceData.csv"))) {
-
+                        String line = br.readLine();
+                        while ((line = br.readLine()) != null) {
+                            String[] fields = line.split(",");
+                            records.add(new Records(fields[0],fields[1],fields[2],fields[3],fields[4],fields[5],fields[6],fields[7],fields[8],fields[9],fields[10],fields[11],fields[12],fields[13],fields[14],fields[15]));
+                        }
+                        System.out.println("File loaded successfully.");
                     } 
                     catch (IOException e) {
                         System.out.println("Error reading CSV: " + e.getMessage());
