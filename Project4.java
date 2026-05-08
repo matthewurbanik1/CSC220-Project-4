@@ -52,7 +52,6 @@ class Record {
             this.is_estimated = Boolean.parseBoolean(is_estimated.trim());
             this.confidence_level = confidence_level.trim();
             this.data_quality_score = Integer.parseInt(data_quality_score.trim());
-            loadCount++;
         }
         catch (NumberFormatException e) { //Catches exceptions when parsing numeric values
             System.out.println("Error parsing numeric value from CSV, row " + company + " " + year + " will be skipped: " + e.getMessage());
@@ -63,7 +62,7 @@ class Record {
             this.valid = false;
         }
     }
-    public boolean isValid() {
+    public boolean isValid() { //Determines if row is skipped
         return valid;
     }
     public String getCompany(){
@@ -166,7 +165,6 @@ class Project4 {
             commandInput = parts[0].toUpperCase();
             if (parts.length > 1) yearInput = parts[1];
             else yearInput = "";
-            //testing branch
             switch (commandInput) {
                 case "LOAD": //read WorkforceData.csv from current directory
                     try (BufferedReader br = new BufferedReader(new FileReader("WorkforceData.csv"))) {
@@ -174,7 +172,9 @@ class Project4 {
                         while ((line1 = br.readLine()) != null) {
                             String[] fields = line1.split(",");
                             Record rec = new Record(fields[0],fields[1],fields[2],fields[3],fields[4],fields[5],fields[6],fields[7],fields[8],fields[9],fields[10],fields[11],fields[12],fields[13],fields[14],fields[15]);
-                            if (rec.isValid()) records.add(rec);
+                            if (rec.isValid()) {
+                                records.add(rec);
+                            }
                             else skipped++;
                         }
                         System.out.println("File loaded successfully.");
@@ -197,247 +197,240 @@ class Project4 {
                     break;
                 case "SUMMARY": { //overall totals and average percentages(anusha)
                     ArrayList<Record> data = records;
-                     String scope = "All Years";
+                    String scope = "All Years";
                     if (commandInput.contains("YEAR")) {
-                    yearInput = scnr.next(); 
-                    try {
-                    int yr = Integer.parseInt(yearInput.trim());
-                    data = new ArrayList<>();
-                    for (Record r : records)
-                    if (r.getYear() == yr) data.add(r);
-                    scope = "Year " + yr;
-                    }  catch (NumberFormatException e) {
-                    System.out.println("Invalid year: " + yearInput);
-         
-        
-                    System.out.println("The number of rows loaded: " + loadCount);
-                    System.out.println("The number of rows skipped: " + skipCount);
+                        yearInput = scnr.next(); 
+                        try {
+                            int yr = Integer.parseInt(yearInput.trim());
+                            data = new ArrayList<>();
+                            for (Record r : records)
+                            if (r.getYear() == yr) data.add(r);
+                            scope = "Year " + yr;
+                        }  
+                        catch (NumberFormatException e) {
+                            System.out.println("Invalid year: " + yearInput);
+                        }
+                        break;
+                    }
+                    if (data.isEmpty()) { 
+                        System.out.println("No records found for: " + scope);
+                        break;
+                    }
+                    long totalHires = 0, totalLayoffs = 0, totalNetChange = 0;
+                    long totalStart = 0, totalEnd = 0;
+                    double sumHiringRate = 0, sumAttrition = 0, sumRevenue = 0;
+                    for (Record r : data) {
+                        totalHires     += r.getNewHires();
+                        totalLayoffs   += r.getLayoffs();
+                        totalNetChange += r.getNetChange();
+                        totalStart     += r.getEmployeesStart();
+                        totalEnd       += r.getEmployeesEnd();
+                        sumHiringRate  += r.getHiringRatePct();
+                        sumAttrition   += r.getAttritionRatePct();
+                        sumRevenue     += r.getRevenueBillionsUsd(); 
+                    }
+                    int n = data.size();
+                    lastReport = String.format("%-35s %s%n",     "=== SUMMARY ===", scope)
+                                + String.format("%-35s %d%n",     "Rows loaded (total):",   records.size())
+                                + String.format("%-35s %d%n",     "Rows skipped (errors):", skipped)
+                                + String.format("%-35s %d%n",     "Rows in this report:",   n)
+                                + String.format("%-35s %,d%n",    "Total New Hires:",       totalHires)
+                                + String.format("%-35s %,d%n",    "Total Layoffs:",         totalLayoffs)
+                                + String.format("%-35s %,d%n",    "Total Net Change:",      totalNetChange)
+                                + String.format("%-35s %,d%n",    "Total Employees (start)",totalStart)
+                                + String.format("%-35s %,d%n",    "Total Employees (end):", totalEnd)
+                                + String.format("%-35s %.2f%%%n", "Avg Hiring Rate:",       sumHiringRate / n)
+                                + String.format("%-35s %.2f%%%n", "Avg Attrition Rate:",    sumAttrition  / n)
+                                + String.format("%-35s $%.2fB%n", "Avg Revenue (USD):",     sumRevenue    / n);
+                    System.out.println(lastReport);
                     break;
-                case "TOP_LAYOFFS": //companies with highest layoffs
-                    break;
-                case "TOP_HIRING": //companies with highest new_hires
-                    break;
-                 }
-                }
-                if (data.isEmpty()) { 
-                 System.out.println("No records found for: " + scope);
-                break;
-                 }
-                 long totalHires = 0, totalLayoffs = 0, totalNetChange = 0;
-                 long totalStart = 0, totalEnd = 0;
-                double sumHiringRate = 0, sumAttrition = 0, sumRevenue = 0;
-                 for (Record r : data) {
-                    totalHires     += r.getNewHires();
-                    totalLayoffs   += r.getLayoffs();
-                    totalNetChange += r.getNetChange();
-                    totalStart     += r.getEmployeesStart();
-                    totalEnd       += r.getEmployeesEnd();
-                    sumHiringRate  += r.getHiringRatePct();
-                    sumAttrition   += r.getAttritionRatePct();
-                    sumRevenue     += r.getRevenueBillionsUsd(); 
-                }
-                int n = data.size();
-                lastReport = String.format("%-35s %s%n",     "=== SUMMARY ===", scope)
-                            + String.format("%-35s %d%n",     "Rows loaded (total):",   records.size())
-                            + String.format("%-35s %d%n",     "Rows skipped (errors):", skipped)
-                            + String.format("%-35s %d%n",     "Rows in this report:",   n)
-                            + String.format("%-35s %,d%n",    "Total New Hires:",       totalHires)
-                            + String.format("%-35s %,d%n",    "Total Layoffs:",         totalLayoffs)
-                            + String.format("%-35s %,d%n",    "Total Net Change:",      totalNetChange)
-                            + String.format("%-35s %,d%n",    "Total Employees (start)",totalStart)
-                            + String.format("%-35s %,d%n",    "Total Employees (end):", totalEnd)
-                            + String.format("%-35s %.2f%%%n", "Avg Hiring Rate:",       sumHiringRate / n)
-                            + String.format("%-35s %.2f%%%n", "Avg Attrition Rate:",    sumAttrition  / n)
-                            + String.format("%-35s $%.2fB%n", "Avg Revenue (USD):",     sumRevenue    / n);
-                 System.out.println(lastReport);
-                break;
                 }
                 case "TOP_LAYOFFS": {//companies with highest layoffs
                     int topN;
                     try { topN = Integer.parseInt(scnr.next().trim()); }
                     catch (NumberFormatException e) { System.out.println("Usage: TOP_LAYOFFS <N> [YEAR <yyyy>]"); break; }
 
-                ArrayList<Record> data = new ArrayList<>(records);
-                String scope = "All Years";
-                String peek = scnr.hasNext() ? scnr.next() : "";
-                if (peek.equalsIgnoreCase("YEAR")) {
-                    try {
-                        int yr = Integer.parseInt(scnr.next().trim());
-                        data = new ArrayList<>();
-                        for (Record r : records)
-                            if (r.getYear() == yr) data.add(r);
-                        scope = "Year " + yr;
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid year."); break;
+                    ArrayList<Record> data = new ArrayList<>(records);
+                    String scope = "All Years";
+                    String peek = scnr.hasNext() ? scnr.next() : "";
+                    if (peek.equalsIgnoreCase("YEAR")) {
+                        try {
+                            int yr = Integer.parseInt(scnr.next().trim());
+                            data = new ArrayList<>();
+                            for (Record r : records)
+                                if (r.getYear() == yr) data.add(r);
+                            scope = "Year " + yr;
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid year."); break;
+                        }
                     }
-                 }
-                if (data.isEmpty()) { System.out.println("No records found for: " + scope); break; }
-                data.sort((a, b) -> Integer.compare(b.getLayoffs(), a.getLayoffs()));
-                int limit = Math.min(topN, data.size());
-                StringBuilder sb = new StringBuilder();
-                sb.append(String.format("=== TOP %d LAYOFFS === %s%n", topN, scope));
-                sb.append(String.format("%-26s %6s %10s%n", "Company", "Year", "Layoffs"));
-                sb.append("-".repeat(46)).append("\n");
-                for (int i = 0; i < limit; i++) {
-                    Record r = data.get(i);
-                    sb.append(String.format("%-26s %6d %10d%n", r.getCompany(), r.getYear(), r.getLayoffs()));
-                }
-                lastReport = sb.toString();
-                System.out.println(lastReport);
-                break;
+                    if (data.isEmpty()) { System.out.println("No records found for: " + scope); break; }
+                    data.sort((a, b) -> Integer.compare(b.getLayoffs(), a.getLayoffs()));
+                    int limit = Math.min(topN, data.size());
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(String.format("=== TOP %d LAYOFFS === %s%n", topN, scope));
+                    sb.append(String.format("%-26s %6s %10s%n", "Company", "Year", "Layoffs"));
+                    sb.append("-".repeat(46)).append("\n");
+                    for (int i = 0; i < limit; i++) {
+                        Record r = data.get(i);
+                        sb.append(String.format("%-26s %6d %10d%n", r.getCompany(), r.getYear(), r.getLayoffs()));
+                    }
+                    lastReport = sb.toString();
+                    System.out.println(lastReport);
+                    break;
                 }
                 case "TOP_HIRING": {//companies with highest new_hires
-                int topN;
-                try { topN = Integer.parseInt(scnr.next().trim()); }
-                catch (NumberFormatException e) { System.out.println("Usage: TOP_HIRING <N> [YEAR <yyyy>]"); break; }
+                    int topN;
+                    try { topN = Integer.parseInt(scnr.next().trim()); }
+                    catch (NumberFormatException e) { System.out.println("Usage: TOP_HIRING <N> [YEAR <yyyy>]"); break; }
 
-                ArrayList<Record> data = new ArrayList<>(records);
-                String scope = "All Years";
-                String peek = scnr.hasNext() ? scnr.next() : "";
-                if (peek.equalsIgnoreCase("YEAR")) {
-                    try {
-                        int yr = Integer.parseInt(scnr.next().trim());
-                        data = new ArrayList<>();
-                        for (Record r : records)
-                            if (r.getYear() == yr) data.add(r);
-                        scope = "Year " + yr;
-                    } catch (NumberFormatException e) {
-                    System.out.println("Invalid year."); break;
+                    ArrayList<Record> data = new ArrayList<>(records);
+                    String scope = "All Years";
+                    String peek = scnr.hasNext() ? scnr.next() : "";
+                    if (peek.equalsIgnoreCase("YEAR")) {
+                        try {
+                            int yr = Integer.parseInt(scnr.next().trim());
+                            data = new ArrayList<>();
+                            for (Record r : records)
+                                if (r.getYear() == yr) data.add(r);
+                            scope = "Year " + yr;
+                        } catch (NumberFormatException e) {
+                        System.out.println("Invalid year."); break;
+                        }
                     }
-                }
-                if (data.isEmpty()) { System.out.println("No records found for: " + scope); break; }
-                data.sort((a, b) -> Integer.compare(b.getNewHires(), a.getNewHires()));
-                int limit = Math.min(topN, data.size());
-                StringBuilder sb = new StringBuilder();
-                sb.append(String.format("=== TOP %d HIRING === %s%n", topN, scope));
-                sb.append(String.format("%-26s %6s %10s%n", "Company", "Year", "New Hires"));
-                sb.append("-".repeat(46)).append("\n");
-                for (int i = 0; i < limit; i++) {
-                    Record r = data.get(i);
-                    sb.append(String.format("%-26s %6d %10d%n", r.getCompany(), r.getYear(), r.getNewHires()));
-                }
-                lastReport = sb.toString();
-                System.out.println(lastReport);
-                break;
+                    if (data.isEmpty()) { System.out.println("No records found for: " + scope); break; }
+                    data.sort((a, b) -> Integer.compare(b.getNewHires(), a.getNewHires()));
+                    int limit = Math.min(topN, data.size());
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(String.format("=== TOP %d HIRING === %s%n", topN, scope));
+                    sb.append(String.format("%-26s %6s %10s%n", "Company", "Year", "New Hires"));
+                    sb.append("-".repeat(46)).append("\n");
+                    for (int i = 0; i < limit; i++) {
+                        Record r = data.get(i);
+                        sb.append(String.format("%-26s %6d %10d%n", r.getCompany(), r.getYear(), r.getNewHires()));
+                    }
+                    lastReport = sb.toString();
+                    System.out.println(lastReport);
+                    break;
             }
                 case "NET_CHANGE": { //top 5 positive and top 5 negative net_change
-                ArrayList<Record> data = new ArrayList<>(records);
-                String scope = "All Years";
-                if (commandInput.contains("YEAR")) {
-                    yearInput = scnr.next();
-                    try {
-                        int yr = Integer.parseInt(yearInput.trim());
-                        data = new ArrayList<>();
-                        for (Record r : records)
-                            if (r.getYear() == yr) data.add(r);
+                    ArrayList<Record> data = new ArrayList<>(records);
+                    String scope = "All Years";
+                    if (commandInput.contains("YEAR")) {
+                        yearInput = scnr.next();
+                        try {
+                            int yr = Integer.parseInt(yearInput.trim());
+                            data = new ArrayList<>();
+                            for (Record r : records)
+                                if (r.getYear() == yr) data.add(r);
+                                scope = "Year " + yr;
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid year: " + yearInput); break;
+                            }
+                    }
+                    if (data.isEmpty()) { System.out.println("No records found for: " + scope); break; }
+                    data.sort((a, b) -> Integer.compare(b.getNetChange(), a.getNetChange()));
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(String.format("=== NET CHANGE === %s%n", scope));
+                    sb.append(String.format("%-26s %6s %12s%n", "Company", "Year", "Net Change"));
+                    sb.append("-".repeat(48)).append("\n");
+                    sb.append("  Top 5 Growth:\n");
+                    int count = 0;
+                    for (Record r : data) {
+                        if (count >= 5 || r.getNetChange() <= 0) break;
+                        sb.append(String.format("  %-26s %6d %+12d%n", r.getCompany(), r.getYear(), r.getNetChange()));
+                        count++;
+                    }
+                    if (count == 0) sb.append("  (none)\n");
+                    sb.append("  Top 5 Decline:\n");
+                    count = 0;
+                    for (int i = data.size() - 1; i >= 0 && count < 5; i--) {
+                        Record r = data.get(i);
+                        if (r.getNetChange() >= 0) break;
+                        sb.append(String.format("  %-26s %6d %+12d%n", r.getCompany(), r.getYear(), r.getNetChange()));
+                        count++;
+                    }
+                    if (count == 0) sb.append("  (none)\n");
+                    lastReport = sb.toString();
+                    System.out.println(lastReport);
+                    break;
+                }
+                case "COMPANY": { //a company's rows (all years), sorted by year ASC
+                    String name = scnr.nextLine().trim().replaceAll("^\"|\"$", "");
+                    if (name.isEmpty()) { System.out.println("Usage: COMPANY <name>"); break; }
+                    String target = name.toLowerCase();
+                    ArrayList<Record> exact = new ArrayList<>();
+                    ArrayList<Record> partial = new ArrayList<>();
+                    for (Record r : records) {
+                        String co = r.getCompany().toLowerCase();
+                        if (co.equals(target))        exact.add(r);
+                    else if (co.contains(target)) partial.add(r);
+                    }
+                    exact.sort((a, b) -> Integer.compare(a.getYear(), b.getYear()));
+                    partial.sort((a, b) -> Integer.compare(a.getYear(), b.getYear()));
+                    exact.addAll(partial);
+                    if (exact.isEmpty()) { System.out.println("No records found for: " + name); break; }
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(String.format("=== COMPANY: %s ===%n", name.toUpperCase()));
+                    sb.append(String.format("%-26s %6s %8s %8s %8s %8s %10s%n",
+            "Company", "Year", "Hires", "Layoffs", "Start", "End", "Net"));
+                    sb.append("-".repeat(84)).append("\n");
+                    for (Record r : exact) {
+                        sb.append(String.format("%-26s %6d %8d %8d %8d %8d %10d%n",
+                            r.getCompany(), r.getYear(),
+                            r.getNewHires(), r.getLayoffs(),
+                            r.getEmployeesStart(), r.getEmployeesEnd(),
+                            r.getNetChange()));
+                    }
+                    lastReport = sb.toString();
+                    System.out.println(lastReport);
+                    break;
+                } 
+                    
+                case "STATS": { //min/avg/max for new_hires, layoffs, net_change
+                    ArrayList<Record> data = records;
+                    String scope = "All Years";
+                    if (commandInput.contains("YEAR")) {
+                        yearInput = scnr.next();
+                        try {
+                            int yr = Integer.parseInt(yearInput.trim());
+                            data = new ArrayList<>();
+                            for (Record r : records)
+                                if (r.getYear() == yr) data.add(r);
                             scope = "Year " + yr;
                         } catch (NumberFormatException e) {
                             System.out.println("Invalid year: " + yearInput); break;
                         }
-                }
-                if (data.isEmpty()) { System.out.println("No records found for: " + scope); break; }
-                data.sort((a, b) -> Integer.compare(b.getNetChange(), a.getNetChange()));
-
-                StringBuilder sb = new StringBuilder();
-                sb.append(String.format("=== NET CHANGE === %s%n", scope));
-                sb.append(String.format("%-26s %6s %12s%n", "Company", "Year", "Net Change"));
-                sb.append("-".repeat(48)).append("\n");
-                sb.append("  Top 5 Growth:\n");
-                int count = 0;
-                for (Record r : data) {
-                    if (count >= 5 || r.getNetChange() <= 0) break;
-                    sb.append(String.format("  %-26s %6d %+12d%n", r.getCompany(), r.getYear(), r.getNetChange()));
-                    count++;
-                }
-                if (count == 0) sb.append("  (none)\n");
-                sb.append("  Top 5 Decline:\n");
-                count = 0;
-                for (int i = data.size() - 1; i >= 0 && count < 5; i--) {
-                    Record r = data.get(i);
-                    if (r.getNetChange() >= 0) break;
-                    sb.append(String.format("  %-26s %6d %+12d%n", r.getCompany(), r.getYear(), r.getNetChange()));
-                    count++;
-                }
-                if (count == 0) sb.append("  (none)\n");
-                lastReport = sb.toString();
-                System.out.println(lastReport);
-                break;
-                }
-                case "COMPANY": { //a company's rows (all years), sorted by year ASC
-                String name = scnr.nextLine().trim().replaceAll("^\"|\"$", "");
-                if (name.isEmpty()) { System.out.println("Usage: COMPANY <name>"); break; }
-                String target = name.toLowerCase();
-                ArrayList<Record> exact = new ArrayList<>();
-                ArrayList<Record> partial = new ArrayList<>();
-                for (Record r : records) {
-                    String co = r.getCompany().toLowerCase();
-                    if (co.equals(target))        exact.add(r);
-                else if (co.contains(target)) partial.add(r);
-                }
-                exact.sort((a, b) -> Integer.compare(a.getYear(), b.getYear()));
-                partial.sort((a, b) -> Integer.compare(a.getYear(), b.getYear()));
-                exact.addAll(partial);
-                if (exact.isEmpty()) { System.out.println("No records found for: " + name); break; }
-
-                StringBuilder sb = new StringBuilder();
-                sb.append(String.format("=== COMPANY: %s ===%n", name.toUpperCase()));
-                sb.append(String.format("%-26s %6s %8s %8s %8s %8s %10s%n",
-        "Company", "Year", "Hires", "Layoffs", "Start", "End", "Net"));
-                sb.append("-".repeat(84)).append("\n");
-                for (Record r : exact) {
-                    sb.append(String.format("%-26s %6d %8d %8d %8d %8d %10d%n",
-                        r.getCompany(), r.getYear(),
-                        r.getNewHires(), r.getLayoffs(),
-                        r.getEmployeesStart(), r.getEmployeesEnd(),
-                        r.getNetChange()));
-                }
-                lastReport = sb.toString();
-                System.out.println(lastReport);
-                break;
-                } //a company's rows (all years), sorted by year ASC
-                    
-                case "STATS": { //min/avg/max for new_hires, layoffs, net_change
-                ArrayList<Record> data = records;
-                String scope = "All Years";
-                if (commandInput.contains("YEAR")) {
-                    yearInput = scnr.next();
-                    try {
-                        int yr = Integer.parseInt(yearInput.trim());
-                        data = new ArrayList<>();
-                        for (Record r : records)
-                            if (r.getYear() == yr) data.add(r);
-                        scope = "Year " + yr;
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid year: " + yearInput); break;
                     }
-                }
-                if (data.isEmpty()) { System.out.println("No records found for: " + scope); break; }
+                    if (data.isEmpty()) { System.out.println("No records found for: " + scope); break; }
 
-                int minHires = Integer.MAX_VALUE, maxHires = Integer.MIN_VALUE;
-                int minLayoffs = Integer.MAX_VALUE, maxLayoffs = Integer.MIN_VALUE;
-                int minNet = Integer.MAX_VALUE, maxNet = Integer.MIN_VALUE;
-                long sumHires = 0, sumLayoffs = 0, sumNet = 0;
-                for (Record r : data) {
-                    int h = r.getNewHires(), l = r.getLayoffs(), nc = r.getNetChange();
-                    if (h < minHires)   minHires   = h;
-                    if (h > maxHires)   maxHires   = h;
-                    if (l < minLayoffs) minLayoffs = l;
-                    if (l > maxLayoffs) maxLayoffs = l;
-                    if (nc < minNet)    minNet     = nc;
-                    if (nc > maxNet)    maxNet     = nc;
-                    sumHires   += h;
-                    sumLayoffs += l;
-                    sumNet     += nc;
-                }
-                int cnt = data.size();
-                lastReport = String.format("=== STATS === %s%n", scope)
-                            + String.format("%-15s %10s %10s %10s%n", "Metric", "Min", "Avg", "Max")
-                            + "-".repeat(49) + "\n"
-                            + String.format("%-15s %10d %10.1f %10d%n", "New Hires",  minHires,   (double)sumHires   / cnt, maxHires)
-                            + String.format("%-15s %10d %10.1f %10d%n", "Layoffs",    minLayoffs, (double)sumLayoffs / cnt, maxLayoffs)
-                            + String.format("%-15s %10d %10.1f %10d%n", "Net Change", minNet,     (double)sumNet     / cnt, maxNet);
-                System.out.println(lastReport);
-                break;
+                    int minHires = Integer.MAX_VALUE, maxHires = Integer.MIN_VALUE;
+                    int minLayoffs = Integer.MAX_VALUE, maxLayoffs = Integer.MIN_VALUE;
+                    int minNet = Integer.MAX_VALUE, maxNet = Integer.MIN_VALUE;
+                    long sumHires = 0, sumLayoffs = 0, sumNet = 0;
+                    for (Record r : data) {
+                        int h = r.getNewHires(), l = r.getLayoffs(), nc = r.getNetChange();
+                        if (h < minHires)   minHires   = h;
+                        if (h > maxHires)   maxHires   = h;
+                        if (l < minLayoffs) minLayoffs = l;
+                        if (l > maxLayoffs) maxLayoffs = l;
+                        if (nc < minNet)    minNet     = nc;
+                        if (nc > maxNet)    maxNet     = nc;
+                        sumHires   += h;
+                        sumLayoffs += l;
+                        sumNet     += nc;
+                    }
+                    int cnt = data.size();
+                    lastReport = String.format("=== STATS === %s%n", scope)
+                                + String.format("%-15s %10s %10s %10s%n", "Metric", "Min", "Avg", "Max")
+                                + "-".repeat(49) + "\n"
+                                + String.format("%-15s %10d %10.1f %10d%n", "New Hires",  minHires,   (double)sumHires   / cnt, maxHires)
+                                + String.format("%-15s %10d %10.1f %10d%n", "Layoffs",    minLayoffs, (double)sumLayoffs / cnt, maxLayoffs)
+                                + String.format("%-15s %10d %10.1f %10d%n", "Net Change", minNet,     (double)sumNet     / cnt, maxNet);
+                    System.out.println(lastReport);
+                    break;
                 }
                     
                 case "EXPORT": { //write the last report to a text file
@@ -451,7 +444,7 @@ class Project4 {
                         System.out.println("Error writing file: " + e.getMessage());
                     }
                     break;
-                    }
+                }
                     
                 case "QUIT": //exit
                     System.out.println("Goodbye!");
