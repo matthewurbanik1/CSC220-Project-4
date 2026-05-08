@@ -207,6 +207,14 @@ class Project4 {
                     scope = "Year " + yr;
                     }  catch (NumberFormatException e) {
                     System.out.println("Invalid year: " + yearInput);
+         
+        
+                    System.out.println("The number of rows loaded: " + loadCount);
+                    System.out.println("The number of rows skipped: " + skipCount);
+                    break;
+                case "TOP_LAYOFFS": //companies with highest layoffs
+                    break;
+                case "TOP_HIRING": //companies with highest new_hires
                     break;
                  }
                 }
