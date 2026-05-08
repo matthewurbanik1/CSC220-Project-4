@@ -52,7 +52,6 @@ class Record {
             this.is_estimated = Boolean.parseBoolean(is_estimated.trim());
             this.confidence_level = confidence_level.trim();
             this.data_quality_score = Integer.parseInt(data_quality_score.trim());
-            loadCount++;
         }
         catch (NumberFormatException e) { //Catches exceptions when parsing numeric values
             System.out.println("Error parsing numeric value from CSV, row " + company + " " + year + " will be skipped: " + e.getMessage());
@@ -63,7 +62,7 @@ class Record {
             this.valid = false;
         }
     }
-    public boolean isValid() {
+    public boolean isValid() { //Determines if row is skipped
         return valid;
     }
     public String getCompany(){
@@ -156,6 +155,7 @@ class Project4 {
         String commandInput = "";
         String yearInput;
         String lastReport = "";
+        int loaded = 0;
         int skipped = 0;
         ArrayList<Record> records = new ArrayList<>();
         
@@ -166,7 +166,6 @@ class Project4 {
             commandInput = parts[0].toUpperCase();
             if (parts.length > 1) yearInput = parts[1];
             else yearInput = "";
-            //testing branch
             switch (commandInput) {
                 case "LOAD": //read WorkforceData.csv from current directory
                     try (BufferedReader br = new BufferedReader(new FileReader("WorkforceData.csv"))) {
@@ -174,7 +173,10 @@ class Project4 {
                         while ((line1 = br.readLine()) != null) {
                             String[] fields = line1.split(",");
                             Record rec = new Record(fields[0],fields[1],fields[2],fields[3],fields[4],fields[5],fields[6],fields[7],fields[8],fields[9],fields[10],fields[11],fields[12],fields[13],fields[14],fields[15]);
-                            if (rec.isValid()) records.add(rec);
+                            if (rec.isValid()) {
+                                records.add(rec);
+                                loaded++;
+                            }
                             else skipped++;
                         }
                         System.out.println("File loaded successfully.");
@@ -206,19 +208,13 @@ class Project4 {
                     for (Record r : records)
                     if (r.getYear() == yr) data.add(r);
                     scope = "Year " + yr;
+                    System.out.println("The number of rows loaded: " + loaded);
+                    System.out.println("The number of rows skipped: " + skipped);
                     }  catch (NumberFormatException e) {
                     System.out.println("Invalid year: " + yearInput);
-         
-        
-                    System.out.println("The number of rows loaded: " + loadCount);
-                    System.out.println("The number of rows skipped: " + skipCount);
-                    break;
-                case "TOP_LAYOFFS": //companies with highest layoffs
-                    break;
-                case "TOP_HIRING": //companies with highest new_hires
+                    }
                     break;
                  }
-                }
                 if (data.isEmpty()) { 
                  System.out.println("No records found for: " + scope);
                 break;
