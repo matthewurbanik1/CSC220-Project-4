@@ -132,7 +132,7 @@ class Record {
 
 
 class Project4 {
-    public ArrayList<Record> getYearList(ArrayList<Record> records, int year) {
+    public static ArrayList<Record> getYearList(ArrayList<Record> records, int year) {
     ArrayList<Record> byYear = new ArrayList<Record>();
     for (Record r : records) {
         if (r.getYear() == year) {
@@ -141,15 +141,7 @@ class Project4 {
     }
     return byYear;
     }
-    public ArrayList<Record> getCompanyList(ArrayList<Record> records, String company) {
-        ArrayList<Record> byCompany = new ArrayList<Record>();
-        for (Record r : records) {
-            if (r.getCompany().equals(company)) {
-                byCompany.add(r);
-            }
-        }
-        return byCompany;
-    }
+
     public static void main(String args[]) {
         Scanner scnr = new Scanner(System.in);
         String commandInput = "";
@@ -202,9 +194,7 @@ class Project4 {
                         yearInput = scnr.next(); 
                         try {
                             int yr = Integer.parseInt(yearInput.trim());
-                            data = new ArrayList<>();
-                            for (Record r : records)
-                            if (r.getYear() == yr) data.add(r);
+                            data = getYearList(records,yr);
                             scope = "Year " + yr;
                         }  
                         catch (NumberFormatException e) {
@@ -256,9 +246,7 @@ class Project4 {
                     if (peek.equalsIgnoreCase("YEAR")) {
                         try {
                             int yr = Integer.parseInt(scnr.next().trim());
-                            data = new ArrayList<>();
-                            for (Record r : records)
-                                if (r.getYear() == yr) data.add(r);
+                            data = getYearList(records, yr);
                             scope = "Year " + yr;
                         } catch (NumberFormatException e) {
                             System.out.println("Invalid year."); break;
