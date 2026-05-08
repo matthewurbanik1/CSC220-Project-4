@@ -20,6 +20,10 @@ class Record {
     private String confidence_level;
     private int data_quality_score;
 
+    private boolean is_skipped = false;
+    public static int loadCount = 0;
+    public static int skipCount = 0;
+
     public Record (String company, String year, String employees_start, String employees_end, String new_hires, String layoffs, String net_change, String hiring_rate_pct, String attrition_rate_pct, String revenue_billion_usd, String stock_price_change_pct, String gdp_growth_us_pct, String unemployment_rate_us_pct, String is_estimated, String confidence_level, String data_quality_score) {
         try {
             this.company = company.trim();
@@ -50,12 +54,17 @@ class Record {
             this.is_estimated = Boolean.parseBoolean(is_estimated.trim());
             this.confidence_level = confidence_level.trim();
             this.data_quality_score = Integer.parseInt(data_quality_score.trim());
+            loadCount++;
         }
         catch (NumberFormatException e) { //Catches exceptions when parsing numeric values
             System.out.println("Error parsing numeric value from CSV, row " + company + " " + year + " will be skipped: " + e.getMessage());
+            skipCount++;
+            is_skipped = true;
         }
         catch (IllegalArgumentException e) { //Catches negative values in employees_start, employees_end, new_hires and layoffs
             System.out.println("Negative value in column " + e.getMessage());
+            skipCount++;
+            is_skipped = true;
         }
     }
     public String getCompany(){
@@ -149,8 +158,8 @@ class Project4 {
         String commandInput = "";
         String yearInput;
         String lastReport = "";
-        int skipCount = 0;
-        int loadCount;
+        // int skipCount = 0;
+        // int loadCount = 0;
         while (commandInput != "QUIT") {
             commandInput = scnr.next();
             //testing branch
@@ -161,14 +170,7 @@ class Project4 {
                         String line = br.readLine();
                         while ((line = br.readLine()) != null) {
                             String[] fields = line.split(",");
-                            
-                            if (fields.length == 16){
-                                records.add(new Record(fields[0],fields[1],fields[2],fields[3],fields[4],fields[5],fields[6],fields[7],fields[8],fields[9],fields[10],fields[11],fields[12],fields[13],fields[14],fields[15]));
-                                loadCount++;
-                            }
-                            else{
-                                skipCount++;
-                            }
+                            records.add(new Record(fields[0],fields[1],fields[2],fields[3],fields[4],fields[5],fields[6],fields[7],fields[8],fields[9],fields[10],fields[11],fields[12],fields[13],fields[14],fields[15]));
                         }
                         System.out.println("File loaded successfully.");
                     } 
@@ -189,9 +191,8 @@ class Project4 {
                     System.out.println("QUIT | exits");
                     break;
                 case "SUMMARY": //overall totals and average percentages
-                    //TODO: Rubric says to print number of loaded vs skipped rows
-                    System.out.println("The number of rows loaded: " + loadCount);
-                    System.out.println("The number of rows skipped: " + skipCount);
+                    System.out.println("The number of rows loaded: " + Record.loadCount);
+                    System.out.println("The number of rows skipped: " + Record.skipCount);
                     break;
                 case "TOP_LAYOFFS": //companies with highest layoffs
                     break;
