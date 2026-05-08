@@ -149,7 +149,8 @@ class Project4 {
         String commandInput = "";
         String yearInput;
         String lastReport = "";
-        
+        int skipCount = 0;
+        int loadCount;
         while (commandInput != "QUIT") {
             commandInput = scnr.next();
             //testing branch
@@ -160,7 +161,14 @@ class Project4 {
                         String line = br.readLine();
                         while ((line = br.readLine()) != null) {
                             String[] fields = line.split(",");
-                            records.add(new Record(fields[0],fields[1],fields[2],fields[3],fields[4],fields[5],fields[6],fields[7],fields[8],fields[9],fields[10],fields[11],fields[12],fields[13],fields[14],fields[15]));
+                            
+                            if (fields.length == 16){
+                                records.add(new Record(fields[0],fields[1],fields[2],fields[3],fields[4],fields[5],fields[6],fields[7],fields[8],fields[9],fields[10],fields[11],fields[12],fields[13],fields[14],fields[15]));
+                                loadCount++;
+                            }
+                            else{
+                                skipCount++;
+                            }
                         }
                         System.out.println("File loaded successfully.");
                     } 
@@ -182,6 +190,8 @@ class Project4 {
                     break;
                 case "SUMMARY": //overall totals and average percentages
                     //TODO: Rubric says to print number of loaded vs skipped rows
+                    System.out.println("The number of rows loaded: " + loadCount);
+                    System.out.println("The number of rows skipped: " + skipCount);
                     break;
                 case "TOP_LAYOFFS": //companies with highest layoffs
                     break;
