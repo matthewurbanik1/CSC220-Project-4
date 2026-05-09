@@ -439,13 +439,20 @@ class Project4 {
                 }
                     
                 case "EXPORT": { //write the last report to a text file
-                    String filename = scnr.next().trim().replaceAll("^\"|\"$", "");
+                    String filename = "";
+                    try {
+                        filename = parts[1];
+                    }
+                    catch (Exception e) {
+                        System.out.println("Usage: EXPORT <filename>");
+                    }
+                    //String filename = scnr.next().trim().replaceAll("^\"|\"$", "");
                         if (lastReport.isEmpty()) { System.out.println("No report to export yet."); break; }
-                        try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(
-                                new FileOutputStream(filename), "UTF-8"))) {
+                    try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(filename), "UTF-8"))) {
                         pw.println(lastReport);
                         System.out.println("Report exported to: " + filename);
-                    } catch (IOException e) {
+                    } 
+                    catch (IOException e) {
                         System.out.println("Error writing file: " + e.getMessage());
                     }
                     break;
