@@ -153,10 +153,15 @@ class Project4 {
         while (commandInput != "QUIT") {
             String line = scnr.nextLine().trim();
             if (line.isEmpty()) continue;
-            String[] parts = line.split(" ", 2);
+            String[] parts = line.split(" ", 4);
             commandInput = parts[0].toUpperCase();
-            if (parts.length > 1) yearInput = parts[1];
-            else yearInput = "";
+            yearInput = "";
+            for (int i = 0; i < parts.length; ++i) {
+                if (parts[i].equals("YEAR")) {
+                    yearInput = parts[i+1];
+                    break;
+                }
+            }
             switch (commandInput) {
                 case "LOAD": //read WorkforceData.csv from current directory
                     try (BufferedReader br = new BufferedReader(new FileReader("WorkforceData.csv"))) {
@@ -190,8 +195,7 @@ class Project4 {
                 case "SUMMARY": { //overall totals and average percentages(anusha)
                     ArrayList<Record> data = records;
                     String scope = "All Years";
-                    if (commandInput.contains("YEAR")) {
-                        yearInput = scnr.next(); 
+                    if (!yearInput.equals("")) {
                         try {
                             int yr = Integer.parseInt(yearInput.trim());
                             data = getYearList(records,yr);
@@ -200,7 +204,6 @@ class Project4 {
                         catch (NumberFormatException e) {
                             System.out.println("Invalid year: " + yearInput);
                         }
-                        break;
                     }
                     if (data.isEmpty()) { 
                         System.out.println("No records found for: " + scope);
@@ -237,22 +240,31 @@ class Project4 {
                 }
                 case "TOP_LAYOFFS": {//companies with highest layoffs
                     int topN;
-                    try { topN = Integer.parseInt(scnr.next().trim()); }
-                    catch (NumberFormatException e) { System.out.println("Usage: TOP_LAYOFFS <N> [YEAR <yyyy>]"); break; }
+                    try { 
+                        topN = Integer.parseInt(parts[1].trim()); 
+                    }
+                    catch (Exception e) { 
+                        System.out.println("Usage: TOP_LAYOFFS <N> [YEAR <yyyy>]"); 
+                        break; 
+                    }
 
                     ArrayList<Record> data = new ArrayList<>(records);
                     String scope = "All Years";
-                    String peek = scnr.hasNext() ? scnr.next() : "";
-                    if (peek.equalsIgnoreCase("YEAR")) {
+                    //String peek = scnr.hasNext() ? scnr.next() : "";
+                    if (!yearInput.equals("")) {
                         try {
-                            int yr = Integer.parseInt(scnr.next().trim());
+                            int yr = Integer.parseInt(yearInput.trim());
                             data = getYearList(records, yr);
                             scope = "Year " + yr;
                         } catch (NumberFormatException e) {
-                            System.out.println("Invalid year."); break;
+                            System.out.println("Invalid year."); 
+                            break;
                         }
                     }
-                    if (data.isEmpty()) { System.out.println("No records found for: " + scope); break; }
+                    if (data.isEmpty()) { 
+                        System.out.println("No records found for: " + scope); 
+                        break; 
+                    }
                     data.sort((a, b) -> Integer.compare(b.getLayoffs(), a.getLayoffs()));
                     int limit = Math.min(topN, data.size());
                     StringBuilder sb = new StringBuilder();
@@ -269,18 +281,20 @@ class Project4 {
                 }
                 case "TOP_HIRING": {//companies with highest new_hires
                     int topN;
-                    try { topN = Integer.parseInt(scnr.next().trim()); }
-                    catch (NumberFormatException e) { System.out.println("Usage: TOP_HIRING <N> [YEAR <yyyy>]"); break; }
+                    try { 
+                        topN = Integer.parseInt(parts[1].trim()); 
+                    }
+                    catch (Exception e) { 
+                        System.out.println("Usage: TOP_HIRING <N> [YEAR <yyyy>]"); 
+                        break; 
+                    }
 
                     ArrayList<Record> data = new ArrayList<>(records);
                     String scope = "All Years";
-                    String peek = scnr.hasNext() ? scnr.next() : "";
-                    if (peek.equalsIgnoreCase("YEAR")) {
+                    if (!yearInput.equals("")) {
                         try {
-                            int yr = Integer.parseInt(scnr.next().trim());
-                            data = new ArrayList<>();
-                            for (Record r : records)
-                                if (r.getYear() == yr) data.add(r);
+                            int yr = Integer.parseInt(yearInput.trim());
+                            data = getYearList(records, yr);
                             scope = "Year " + yr;
                         } catch (NumberFormatException e) {
                         System.out.println("Invalid year."); break;
@@ -304,13 +318,10 @@ class Project4 {
                 case "NET_CHANGE": { //top 5 positive and top 5 negative net_change
                     ArrayList<Record> data = new ArrayList<>(records);
                     String scope = "All Years";
-                    if (commandInput.contains("YEAR")) {
-                        yearInput = scnr.next();
+                    if (!yearInput.equals("")) {
                         try {
                             int yr = Integer.parseInt(yearInput.trim());
-                            data = new ArrayList<>();
-                            for (Record r : records)
-                                if (r.getYear() == yr) data.add(r);
+                            data = getYearList(records, yr);
                                 scope = "Year " + yr;
                             } catch (NumberFormatException e) {
                                 System.out.println("Invalid year: " + yearInput); break;
@@ -345,8 +356,17 @@ class Project4 {
                     break;
                 }
                 case "COMPANY": { //a company's rows (all years), sorted by year ASC
-                    String name = scnr.nextLine().trim().replaceAll("^\"|\"$", "");
-                    if (name.isEmpty()) { System.out.println("Usage: COMPANY <name>"); break; }
+                    String name = "";
+                    try {
+                        name = parts[1];
+                        if (name.equals("")) {
+                            throw new IllegalArgumentException();
+                        }
+                    }
+                    catch (Exception e) {
+                        System.out.println("Usage: COMPANY <name>");
+                        break;
+                    }
                     String target = name.toLowerCase();
                     ArrayList<Record> exact = new ArrayList<>();
                     ArrayList<Record> partial = new ArrayList<>();
@@ -380,13 +400,10 @@ class Project4 {
                 case "STATS": { //min/avg/max for new_hires, layoffs, net_change
                     ArrayList<Record> data = records;
                     String scope = "All Years";
-                    if (commandInput.contains("YEAR")) {
-                        yearInput = scnr.next();
+                    if (!yearInput.equals("")) {
                         try {
                             int yr = Integer.parseInt(yearInput.trim());
-                            data = new ArrayList<>();
-                            for (Record r : records)
-                                if (r.getYear() == yr) data.add(r);
+                            data = getYearList(records, yr);
                             scope = "Year " + yr;
                         } catch (NumberFormatException e) {
                             System.out.println("Invalid year: " + yearInput); break;
