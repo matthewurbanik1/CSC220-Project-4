@@ -1,7 +1,8 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.*;
-
+//code blame can be found at https://github.com/matthewurbanik1/CSC220-Project-4
+//most lines from commit "Indentation correction" are from Anusha, main alteration was just indentation changes
 class Record {
     private String company;
     private int year;
